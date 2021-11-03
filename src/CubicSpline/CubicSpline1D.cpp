@@ -14,9 +14,10 @@ CubicSpline1D::CubicSpline1D() = default;
 CubicSpline1D::CubicSpline1D(const vector<double>& v1,
                              const vector<double>& v2):
                              nx(v1.size()), a(v2), x(v1), y(v2){
-    // compute elementwise difference
-    vector<double> deltas (nx);
-    adjacent_difference(x.begin(), x.end(), deltas.begin());
+    // compute elementwise difference // 计算每两个相邻路径点之间的距离，这里对应的是 h_i = s_i+1 - s_i
+    vector<double> deltas(nx);
+    adjacent_difference(x.begin(), x.end(), deltas.begin()); 
+    
     deltas.erase(deltas.begin());
 
     // compute matrix a, vector b
@@ -34,8 +35,7 @@ CubicSpline1D::CubicSpline1D(const vector<double>& v1,
     // construct attribute b, d
     for (int i = 0; i < nx - 1; i++) {
         d.push_back((c[i + 1] - c[i]) / (3.0 * deltas[i]));
-        b.push_back((a[i + 1] - a[i]) / deltas[i] - deltas[i] *
-        (c[i + 1] + 2.0 * c[i]) / 3.0);
+        b.push_back((a[i + 1] - a[i]) / deltas[i] - deltas[i] * (c[i + 1] + 2.0 * c[i]) / 3.0);
     }
 }
 
@@ -77,7 +77,7 @@ double CubicSpline1D::calc_der2(double t) {
 // Create the constants matrix a used in spline construction
 void CubicSpline1D::matrix_a(vector<double> &deltas, MatrixXd &result) {
     result(0, 0) = 1;
-    for (int i = 0; i < nx - 1; i++) {
+    for (int i = 0; i < nx - 1; i++) {  // nx is the number of waypoints.
         if (i != nx - 2) {
             result(i + 1, i + 1) = 2.0 * (deltas[i] + deltas[i + 1]);
         }
@@ -85,9 +85,13 @@ void CubicSpline1D::matrix_a(vector<double> &deltas, MatrixXd &result) {
         result(i, i + 1) = deltas[i];
     }
 
-    result(0, 1) = 0.0;
-    result(nx - 1, nx - 2) = 0.0;
-    result(nx - 1, nx - 1) = 1.0;
+    result(0, 1) = 0.0;  // 第一行只有第一个元素为 1， 其余均为 0。
+    // 由于在上面的 for 循环中被赋值为 delta[0]，因此需要重新赋值为 0.0。
+
+    result(nx - 1, nx - 2) = 0.0;  // 最后一行只有最后一个元素为 1，其它均为 0。
+    // 第 (nx-1, nx-2) 个元素会在上面的 for 循环中被赋值为 delta[nx-2]，因此需要再次赋值为 0.0，将原来的值覆盖掉。
+    
+    result(nx - 1, nx - 1) = 1.0;  // 给最后一个元素赋值为 1。
 }
 
 // Create the 1st derivative vector b used in spline construction
@@ -100,5 +104,5 @@ void CubicSpline1D::vector_b(vector<double> &deltas, VectorXd &result) {
 
 // Search the spline for index closest to t
 int CubicSpline1D::search_index(double t) {
-    return std::upper_bound (x.begin(), x.end(), t) - x.begin();
+    return std::upper_bound(x.begin(), x.end(), t) - x.begin();
 }

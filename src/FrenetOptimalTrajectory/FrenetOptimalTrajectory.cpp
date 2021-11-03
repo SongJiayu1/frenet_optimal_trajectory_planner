@@ -40,8 +40,7 @@ FrenetOptimalTrajectory::FrenetOptimalTrajectory(
 
         int total_di_iter = static_cast<int>((fot_hp->max_road_width_l +
                                               fot_hp->max_road_width_r) /
-                                             fot_hp->d_road_w) +
-                            1; // account for the last index
+                                             fot_hp->d_road_w) + 1; // account for the last index
 
         calc_frenet_paths(0, total_di_iter, false);
 
