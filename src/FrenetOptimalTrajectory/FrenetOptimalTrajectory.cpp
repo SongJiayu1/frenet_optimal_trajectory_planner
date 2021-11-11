@@ -124,10 +124,11 @@ void FrenetOptimalTrajectory::calc_frenet_paths(int start_di_index,
                                                 int end_di_index,
                                                 bool multithreaded) {
     double t, ti, tv;
-    double lateral_deviation, lateral_velocity, lateral_acceleration,
-        lateral_jerk;
+    double lateral_deviation, lateral_velocity, lateral_acceleration, lateral_jerk;
     double longitudinal_acceleration, longitudinal_jerk;
+
     FrenetPath *fp, *tfp;
+    
     int num_paths = 0;
     int num_viable_paths = 0;
     // double valid_path_time = 0;
@@ -159,10 +160,12 @@ void FrenetOptimalTrajectory::calc_frenet_paths(int start_di_index,
                 fp->d_d.push_back(lat_qp.calc_first_derivative(t));
                 fp->d_dd.push_back(lat_qp.calc_second_derivative(t));
                 fp->d_ddd.push_back(lat_qp.calc_third_derivative(t));
+
                 lateral_deviation += abs(lat_qp.calc_point(t));
                 lateral_velocity += abs(lat_qp.calc_first_derivative(t));
                 lateral_acceleration += abs(lat_qp.calc_second_derivative(t));
                 lateral_jerk += abs(lat_qp.calc_third_derivative(t));
+
                 t += fot_hp->dt;
             }
 
@@ -180,6 +183,7 @@ void FrenetOptimalTrajectory::calc_frenet_paths(int start_di_index,
                 tfp->d_d.assign(fp->d_d.begin(), fp->d_d.end());
                 tfp->d_dd.assign(fp->d_dd.begin(), fp->d_dd.end());
                 tfp->d_ddd.assign(fp->d_ddd.begin(), fp->d_ddd.end());
+
                 QuarticPolynomial lon_qp = QuarticPolynomial(
                     fot_ic->s0, fot_ic->c_speed, 0.0, tv, 0.0, ti);
 
@@ -189,8 +193,8 @@ void FrenetOptimalTrajectory::calc_frenet_paths(int start_di_index,
                     tfp->s_d.push_back(lon_qp.calc_first_derivative(tp));
                     tfp->s_dd.push_back(lon_qp.calc_second_derivative(tp));
                     tfp->s_ddd.push_back(lon_qp.calc_third_derivative(tp));
-                    longitudinal_acceleration +=
-                        abs(lon_qp.calc_second_derivative(tp));
+
+                    longitudinal_acceleration += abs(lon_qp.calc_second_derivative(tp));
                     longitudinal_jerk += abs(lon_qp.calc_third_derivative(tp));
                 }
 
